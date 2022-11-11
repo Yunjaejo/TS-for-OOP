@@ -37,4 +37,34 @@
 
   const maker = CoffeeMaker.makeMachine(32);
   maker.fillCoffeeBeans(32);
+
+  class User {
+    private internalAge = 4;
+
+    constructor(private firstName: string, private lastName: string) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+    }
+
+    get fullName(): string {
+      return `${ this.firstName } ${ this.lastName }`;
+    }
+
+    get age(): number {
+      return this.internalAge;
+    }
+
+    set age(num: number) {
+      if (num < 0) {
+        throw new Error('나이가 왜 0보다 작지??')
+      }
+      this.internalAge = num;
+    }
+  }
+
+  const user = new User('Steve', 'Jobs');
+  console.log(user.fullName); // getter, setter 는 일반 멤버변수처럼 호출
+
+  user.age = 6
+  console.log(user.fullName);
 }
