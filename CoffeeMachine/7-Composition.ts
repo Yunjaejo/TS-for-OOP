@@ -21,12 +21,8 @@
     private static BEANS_GRAM_PER_SHOT = 7; // 프로퍼티를 외부에서 접근하지 못하게 제한
     private coffeeBeans: number = 0;
 
-    constructor(coffeeBeans: number) {
+    constructor(coffeeBeans: number, private milk: MilkFrother, private sugar: SugarProvider) {
       this.coffeeBeans = coffeeBeans;
-    }
-
-    static makeMachine(coffeeBeans: number): CoffeeMachine { // 생성자가 아닌 static 메서드로 인스턴스 생성
-      return new CoffeeMachine(coffeeBeans);
     }
 
     fillCoffeeBeans(beans: number) {
@@ -63,7 +59,8 @@
     makeCoffee(shots: number): CoffeeCup {
       this.grindBeans(shots);
       this.preheat();
-      return this.extract(shots);
+      const coffee = this.extract(shots);
+      return this.milk.makeMilk(this.sugar.addSugar(coffee));
     }
   }
 
@@ -109,6 +106,12 @@
     }
   }
 
+  class NoMilk implements MilkFrother {
+    makeMilk(cup: CoffeeCup): CoffeeCup {
+      return cup;
+    }
+  }
+
   class CandySugarMixer implements SugarProvider {
     private getSugar(): boolean {
       console.log('Getting some sugar from candy');
@@ -139,50 +142,13 @@
     }
   }
 
-  class CafeLatteMachine extends CoffeeMachine {
-
-    constructor(coffeeBeans: number, public readonly serialNumber: string, private milkFrother: MilkFrother) {
-      super(coffeeBeans);
-    }
-
-    makeCoffee(shots: number): CoffeeCup {
-      const coffee = super.makeCoffee(shots);
-      return this.milkFrother.makeMilk(coffee);
+  class NoSugar implements SugarProvider {
+    addSugar(cup: CoffeeCup): CoffeeCup {
+      return cup;
     }
   }
 
-  class SweetCoffeeMaker extends CoffeeMachine {
-
-    constructor(coffeeBeans: number, private sugar: SugarProvider) {
-      super(coffeeBeans);
-    }
-
-    makeCoffee(shots: number): CoffeeCup {
-      const coffee = super.makeCoffee(shots);
-      return this.sugar.addSugar(coffee);
-    }
-  }
-
-  class SweetCafeLatteMachine extends CoffeeMachine {
-
-    constructor(coffeeBeans: number, private milk: MilkFrother, private sugar: SugarProvider) { // 생성자로 클래스를 주입하는 것이 아니라 추상화된 클래스에 의존하기 !!
-      super(coffeeBeans);
-    }
-
-    makeCoffee(shots: number): CoffeeCup {
-      const coffee = super.makeCoffee(shots);
-      return this.milk.makeMilk(this.sugar.addSugar(coffee));
-    }
-  }
-
-  const cheapMilkSteamer = new CheapMilkSteamer();
-  const fancyMilkSteamer = new FancyMilkSteamer();
-  const coldMilkSteamer = new ColdMilkSteamer();
-
-  const candySugarMixer = new CandySugarMixer();
-  const sugarMixer = new SugarMixer();
-
-  const cheapCandyMachine = new SweetCafeLatteMachine(12, cheapMilkSteamer, candySugarMixer)
-  const cheapSugarMachine = new SweetCafeLatteMachine(12, cheapMilkSteamer, sugarMixer)
+  const noSugarLatteMachine = new CoffeeMachine(15, new FancyMilkSteamer(), new NoSugar())
+  noSugarLatteMachine.makeCoffee(2)
 
 }
